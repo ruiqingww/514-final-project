@@ -1,0 +1,65 @@
+#include <Arduino.h>
+// #include <BLEDevice.h>
+// #include <BLEUtils.h>
+// #include <BLEScan.h>
+// #include <BLEAdvertisedDevice.h>
+// // Client Code
+// #include "BLEDevice.h"
+#include <AccelStepper.h>
+#include "MyIndicator.h"
+#include <SwitecX25.h>
+//#include <Stepper.h>
+//#include "BLEScan.h"
+
+// Define the stepper motor connections and motor interface type
+#define motorPin1  1    // IN1 on the ULN2003 driver
+#define motorPin2  2     // IN2 on the ULN2003 driver
+#define motorPin3  3    // IN3 on the ULN2003 driver
+#define motorPin4  4    // IN4 on the ULN2003 driver
+#define stepsPerRevolution 2048
+#define STEPS 316  // Adjust this value for your specific motor
+
+
+// Stepper myStepper(stepsPerRevolution, motorPin1, motorPin2, motorPin3, motorPin4);
+SwitecX25 stepper(STEPS, motorPin1, motorPin2, motorPin3, motorPin4);
+MyIndicator myindicator=MyIndicator();
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Starting Arduino BLE Client application...");
+  // // Set the maximum speed and acceleration:
+  // stepper.setMaxSpeed(1500);
+  // stepper.setAcceleration(1000);
+  stepper.zero();
+  // myStepper.setSpeed(30);  // set the speed (rpm)
+
+  delay(1000); // Delay a second between loops.
+}
+
+int counter=0;
+void loop() {
+  myindicator.switchIndicator(12);
+
+  // Move the stepper motor 2048 steps (one revolution) forward:
+  stepper.setPosition(STEPS /2);
+  while (stepper.currentStep != stepper.targetStep) {
+    Serial.println(stepper.currentStep);
+    stepper.update();
+  }
+
+  delay(500); // Wait for a second
+  counter+=1;
+  Serial.print("changing direction...");
+  Serial.println(counter);
+  myindicator.switchIndicator(61);
+
+
+  // Move the stepper motor 2048 steps backward:
+  stepper.setPosition(0);
+  while (stepper.currentStep != stepper.targetStep) {
+    Serial.println(stepper.currentStep);
+    stepper.update();
+  }
+
+  delay(500); // Wait for a second
+}

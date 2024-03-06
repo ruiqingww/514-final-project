@@ -1,17 +1,98 @@
 #include <OneWire.h>
+#include <Arduino.h>
+#include <BLEDevice.h>
+#include <BLEServer.h>
+#include <BLEUtils.h>
+#include <BLE2902.h>
+#include <stdlib.h>
+
+BLEServer* pServer = NULL;
+BLECharacteristic* pCharacteristic = NULL;
+bool deviceConnected = false;
+bool oldDeviceConnected = false;
+const long interval = 1000;
 OneWire  ds(9);
+float celsius;
+float celsiu[5];
+int myidx = 0;
+float total = 0;
+float average = 0;
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914c"
+#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a9"
+void processData();
+class MyServerCallbacks : public BLEServerCallbacks {
+    void onConnect(BLEServer* pServer) {
+        deviceConnected = true;
+    };
+
+    void onDisconnect(BLEServer* pServer) {
+        deviceConnected = false;
+    }
+};
+
 
 void setup(void) {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.println("Starting BLE work!");
+
+  BLEDevice::init("ruiqing");
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new MyServerCallbacks());
+  BLEService *pService = pServer->createService(SERVICE_UUID);
+  pCharacteristic = pService->createCharacteristic(
+      CHARACTERISTIC_UUID,
+      BLECharacteristic::PROPERTY_READ |
+      BLECharacteristic::PROPERTY_WRITE |
+      BLECharacteristic::PROPERTY_NOTIFY
+  );
+  pCharacteristic->addDescriptor(new BLE2902());
+  pCharacteristic->setValue("Hello World");
+  pService->start();
+
+  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
+  pAdvertising->setMinPreferred(0x12);
+  BLEDevice::startAdvertising();
+  Serial.println("Characteristic defined! Now you can read it in your phone!");
 }
 
 void loop(void) {
+  
+
+  // notify changed value
+  if (deviceConnected) {
+    processData();
+      pCharacteristic->setValue(average);
+      pCharacteristic->notify();
+      Serial.println("Temperature sent");
+  }
+
+  // disconnecting
+  if (!deviceConnected && oldDeviceConnected) {
+      delay(500);  // give the bluetooth stack the chance to get things ready
+      pServer->startAdvertising();  // advertise again
+      Serial.println("Start advertising");
+      oldDeviceConnected = deviceConnected;
+  }
+
+  // connecting
+  if (deviceConnected && !oldDeviceConnected) {
+      // do stuff here on connecting
+      oldDeviceConnected = deviceConnected;
+  }
+  delay(1000);
+}
+
+void processData(){
   byte i;
   byte present = 0;
   byte type_s;
   byte data[9];
   byte addr[8];
-  float celsius, fahrenheit;
+  float celsius;
   
   if ( !ds.search(addr)) {
     Serial.println("No more addresses.");
@@ -95,15 +176,20 @@ void loop(void) {
     //// default is 12 bit resolution, 750 ms conversion time
   }
   celsius = (float)raw / 16.0;
-  fahrenheit = celsius * 1.8 + 32.0;
   Serial.print("  Temperature = ");
   Serial.print(celsius);
   Serial.print(" Celsius, ");
-  Serial.print(fahrenheit);
-  Serial.println(" Fahrenheit");
+  // Serial.print(fahrenheit);
+  // Serial.println(" Fahrenheit");
+
+// Update the moving average buffer
+  total -= celsiu[myidx];
+  celsiu[myidx] = celsius;
+  total += celsiu[myidx];
+  myidx = (myidx + 1) % 5;
+  average = total / 5.0;
+  Serial.print("Filtered Temperature: ");
+  Serial.print(average);
+  Serial.print(" Celsius, ");
+
 }
-
-
-
-
-
