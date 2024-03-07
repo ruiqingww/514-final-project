@@ -17,16 +17,16 @@ void MyIndicator::setColor(int red, int green, int blue)
 }
 
 void MyIndicator::switchIndicator(int average){
-    if(average <=40){
+    if(average <=30){
     setColor(0, 0, 0);
     }
-    else if(average > 40 && average <= 50){
+    else if(average > 30 && average <= 45){
     setColor(255, 0, 0);
     }
-    else if(average > 50 && average <= 60){
+    else if(average > 45 && average <= 55){
     setColor(0, 0, 255);
     }
-    else if(average > 60 && average <= 70){
+    else if(average > 55 && average <= 65){
     setColor(0, 255, 0);
     }
     else{

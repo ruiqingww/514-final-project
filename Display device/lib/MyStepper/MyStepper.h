@@ -13,7 +13,6 @@
 
 class  MyStepper{
     private:
-
         SwitecX25 stepper=SwitecX25(MOTORSTEP, motorPin1, motorPin2, motorPin3, motorPin4);
         float STEPS=MOTORSTEP;
         float curDigit=0;
@@ -21,10 +20,9 @@ class  MyStepper{
     
     public:
         MyStepper();
-        void point2digit(float digit);
+        void point2angle(float digit);
+        void mapTempToAngle(float temp);
         
-
-
 };
 
 #endif

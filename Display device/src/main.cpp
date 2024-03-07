@@ -61,7 +61,7 @@ static void notifyCallback(
     Serial.print("current data: ");
     Serial.print(curData);
     Serial.println("c");
-    mystepper.point2digit(curData);
+    mystepper.mapTempToAngle(curData);
     myindicator.switchIndicator(int(curData));
 }
 
