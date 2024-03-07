@@ -1,10 +1,10 @@
 # 514-final-project
-![1](Reportjpg/1.jpeg)
+![1](Reportjpg/1.jpg)
 ![2](Reportjpg/2.jpeg)
 ![3](Reportjpg/3.jpeg)
 ![4](Reportjpg/4.jpeg)
 ![5](Reportjpg/5.jpeg)
-![6](Reportjpg/6.jpeg)
+![6](Reportjpg/6.jpg)
 ![7](Reportjpg/7.jpeg)
 ![8](Reportjpg/8.jpeg)
 ![9](Reportjpg/9.jpeg)
